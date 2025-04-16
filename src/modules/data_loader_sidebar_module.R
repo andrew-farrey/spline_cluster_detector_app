@@ -154,6 +154,19 @@ dl_sidebar_ui <- function(id) {
     class = 'bg-transparent border-0'
   )
   
+  ad_hoc_vs_built_rb <- radioButtons(
+    inputId = ns("ad_hoc_vs_built"),
+    label = labeltt(sb_ll[["ad_hoc_vs_built"]]),
+    choices=c("Ad-hoc URL" = "ad_hoc", "URL Builder" = "built"),
+    selected="built",
+    inline=TRUE
+  )
+  
+  # TURN OFF THE custom url, if NOT ALLOWED GLOBALLY
+  if(!ALLOW_CUSTOM_URL) {
+    ad_hoc_vs_built_rb = hidden(ad_hoc_vs_built_rb)
+  }
+  
   local_or_nssp_ui <- tagList(
     radioButtons(
       inputId = ns("local_or_nssp"),
@@ -164,13 +177,7 @@ dl_sidebar_ui <- function(id) {
     ),
     conditionalPanel(
       condition="input.local_or_nssp == 'nssp'",
-      radioButtons(
-          inputId = ns("ad_hoc_vs_built"),
-          label = labeltt(sb_ll[["ad_hoc_vs_built"]]),
-          choices=c("Ad-hoc URL" = "ad_hoc", "URL Builder" = "built"),
-          selected="built",
-          inline=TRUE
-      ), 
+      ad_hoc_vs_built_rb, 
       conditionalPanel(
         condition="input.ad_hoc_vs_built == 'ad_hoc'",
         card(
