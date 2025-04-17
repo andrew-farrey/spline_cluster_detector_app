@@ -69,5 +69,5 @@ BOOT_PRESET = "cosmo"
 # read in the zips fips intersections file
 ZFI = fread("ancillary_data/zcta_fips_intersections.csv", colClasses = "character")
 
-ALLOW_CUSTOM_URL = TRUE
+ALLOW_CUSTOM_URL = FALSE
 
