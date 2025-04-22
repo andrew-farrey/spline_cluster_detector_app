@@ -101,6 +101,9 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
             if(dc$USE_NSSP && dc$ad_hoc) {
               
               # We have been passed a url
+              if(!dc$custom_url_valid) {
+                stop("Custom URL is not valid")
+              }
               
               data = get_custom_url_data(
                 dc$custom_url,

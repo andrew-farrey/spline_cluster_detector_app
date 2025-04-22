@@ -145,7 +145,7 @@ clust_sidebar_ui <- function(id) {
           label = labeltt(clsb_ll[["baseline_length"]]),
           value = 90,
           min = 7,
-          max = 365
+          max = MAX_DATE_RANGE
         ),
         accordion(
           id = ns("main_accordion"),

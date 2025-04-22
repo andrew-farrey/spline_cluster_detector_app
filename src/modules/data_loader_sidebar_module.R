@@ -69,7 +69,7 @@ sb_ll <- list(
     ),
     baseline_length = list(
       l = "Baseline Length",
-      m = "Number of days in the baseline interval (min 1, max 365)"
+      m = paste0("Number of days in the baseline interval (min 1, max ", MAX_DATE_RANGE, ")")
     )
     
     
@@ -105,7 +105,7 @@ dl_sidebar_ui <- function(id) {
       label = labeltt(sb_ll[["data_load_drange"]]),
       end = Sys.Date()-7,
       start = Sys.Date()-126,
-      min = Sys.Date()-365,
+      min = Sys.Date()-MAX_DATE_RANGE,
       max = Sys.Date()
     )
   )
@@ -182,6 +182,7 @@ dl_sidebar_ui <- function(id) {
         condition="input.ad_hoc_vs_built == 'ad_hoc'",
         card(
           textAreaInput(ns("custom_url"), "Custom URL",height = "200px"),
+          htmlOutput(ns("url_validity_message")),
           dateRangeInput(
             ns("url_date_change"),
             label = labeltt(sb_ll[["url_date_change"]])
@@ -225,11 +226,19 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
     id,
     function(input, output, session) {
 
+      custom_url_valid <- reactiveVal("TRUE")
+      
+      output$url_validity_message <- renderText({
+        if(custom_url_valid()!="TRUE") {
+          HTML(paste0("<p style='color:red'>", custom_url_valid(), "</p>"))
+        }
+      })
 
       ns=session$ns
 
       # Set Data Config Global Reactive Values
       observe(dc$USE_NSSP <- input$local_or_nssp=="nssp")
+      observe(dc$custom_url_valid <- custom_url_valid() == "TRUE")
       observe(dc$data_type <- input$data_type)
       observe(dc$data_source <- input$data_source)
       observe(dc$res <- input$res)
@@ -343,7 +352,7 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
         bindEvent(use_pre_calc_matrix())
 
 
-      ## Observe the url box
+      ## Observe the url box and check for errors
       observe({
         req(dc$custom_url)
 
@@ -354,15 +363,16 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
             "zip",
             "county"
           )
-
+          
           # update the resolution based on this guess
           updateRadioButtons(session=session, inputId = "res", selected=res_guess )
 
           # update the states based on this resolution
           states = get_states_from_location(
-            unique(extract_locations_from_url(dc$custom_url, res_guess)),
+            toupper(unique(extract_locations_from_url(dc$custom_url, res_guess))),
             res_guess
           )
+          
           choices = state.name[which(state.abb %in% states)]
           if("DC" %in% states) {
             choices = sort(c(choices, "District of Columbia"))
@@ -375,23 +385,15 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
 
           # Get the dates in url
           dates = extract_dates_from_url(dc$custom_url)
-
-          # # update the detect date based on enddate in url
-          # date_guess = fifelse(
-          #   dc$custom_url=="",
-          #   Sys.Date()-7,
-          #   dates[["end"]]
-          # )
-          # 
-          # #if(is.na(date_guess)) date_guess = dc$end_date
-          # if(is.null(date_guess) || is.na(date_guess)) date_guess = Sys.Date()-7
-          # updateDateInput(
-          #   session=session,
-          #   inputId = "end_date",
-          #   value = date_guess
-          # )
-
-
+          
+          # Check validity of URL
+          
+          custom_url_valid(check_url_validity(
+            url = dc$custom_url,
+            states = states,
+            dates = dates
+          ))
+            
           # What about updating the date input range.. The problem here is
           # that we might enter a reactivity loop. How do we prevent that
           freezeReactiveValue(input, "url_date_change")
@@ -552,9 +554,11 @@ hide_show_sidebar_elements <- function(use_nssp, url_builder, file_uploaded) {
     if(url_builder == "ad_hoc") {
       hideElement("data_type")
       hideElement("data_source")
+      hideElement("data_load_drange")
     } else {
       showElement("data_type")
       showElement("data_source")
+      showElement("data_load_drange")
     }
   } else {
     showElement("local_file_upload")
@@ -594,4 +598,30 @@ create_syndrome_acc_panel <- function(ns, cats) {
       choices = cats
     )
   )
+}
+
+
+# Helper function to check validity of the custom url
+check_url_validity <- function(url, states, dates) {
+
+  # Some validity checks:
+  if(length(states) == 0) {
+    validity_result = "No Counties or Zip Codes Detected"
+  } else if(grepl("tableBuilder", url) == FALSE) {
+    validity_result = "Must be tableBuilder URL"
+  } else if(grepl("[/]csv[?]", url)) {
+    validity_result = "Cannot be a csv url / must be json"
+  } else if(is.null(dates) || length(dates)!=2 || is.na(dates[["start"]]) || is.na(dates[["end"]])) {
+    validity_result = "Start and/or End Date missing, null, or malformed"
+  } else if (dates[["start"]] > dates[["end"]]) {
+    validity_result = "End date is before start date"
+  } else if((dates[["end"]] - dates[["start"]])>MAX_DATE_RANGE) {
+    validity_result = paste0("Start and End date interval cannot exceed ", MAX_DATE_RANGE, " days")
+  } else if(grepl("timeResolution=daily", url) == FALSE) {
+    validity_result = "URL must contain 'timeResolution=daily' as parameter"
+  } else {
+    validity_result = "TRUE"
+  }
+  # return the message
+  validity_result
 }

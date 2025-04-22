@@ -33,6 +33,9 @@ for(f in list.files("src/scd_package_assets/", pattern=".R$", full.names = T,rec
 rm(list=c("f"))  
 #######################################
 
+MAX_DATE_RANGE = 730
+
+
 # SOURCE THE VARIOUS FILES
 # Get the rstudio-based credentials functions
 source("src/01_credentials.R")

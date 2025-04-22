@@ -56,7 +56,7 @@ server <- function(input, output, session) {
     
     # url and source info
     url_params = NULL, source_data = NULL, USE_NSSP = FALSE, data_type = NULL,
-    data_source = NULL, custom_url = NULL, ad_hoc = FALSE, dedup = FALSE
+    data_source = NULL, custom_url = NULL, custom_url_valid = TRUE, ad_hoc = FALSE, dedup = FALSE
   )
   
   # ----------------------------------------------------------------------

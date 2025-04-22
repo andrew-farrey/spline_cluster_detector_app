@@ -1,17 +1,15 @@
 ::: {style="margin: auto; width:100%"}
-# Online Tool for AD HOC On-Demand Spatio-temporal Cluster Detection
+# Online Tool for *Ad Hoc* On-Demand Spatio-temporal Cluster Detection
 
 ## Description
 
-An R Shiny app for implementing the spline-based cluster classification/detection approach.
+An R Shiny app for implementing a spline-based classification/detection approach for determining clusters of patient health records whose grouping in space and time is anomalous and possibly worthy of investigation.
 
 ## Rationale
 
--   For determining collections of data records whose grouping in time and location is anomalous relative to expectation
+-   The app code approximates the scan statistics methodology implemented in the open source SaTScan software to enable rapid cluster detection by users of ESSENCE biosurveillance systems for arbitrary as well as standard syndromic record groupings. The app enables prompt iterative experimentation and modification of these groupings and of baseline and test intervals and other cluster parameters.
 
--   For adoption of scan statistics
-
--   For approximation using empirical altering thresholds
+-   The target audience are ESSENCE system users wishing to work within the web application, and also non-users who provide files of record dates, locations, and counts.
 
 ## App Organization
 

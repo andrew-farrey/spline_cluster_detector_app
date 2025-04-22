@@ -242,7 +242,26 @@ prepare_raw_data <- function(data, data_type, res, deduplicate=FALSE, state=NULL
     data[, timeResolution:=as.IDate(timeResolution)]
   }
   
-  setnames(data, new=c("date", "location", "count"))
+  if(ncol(data)>4) {
+    cli:cli_abort("Returned data has more than 4 columns and can't be processed")
+  }
+  
+  if(!"count" %in% names(data)) {
+    cli:cli_abort("Returned data has no count column, perhaps check custom URL?")
+  }
+  
+  ## Okay, now we see if we can correctly rename the cols
+  # 1. We assume that there is a timeResolution or Date column, and its the first
+  setnames(data, old = names(data)[1], new="date")
+  
+  # 2. We assume that the second column is a location indicator
+  setnames(data, old = names(data)[2], new="location")
+  
+  # 3. If there are four columns, we are going to sum over that extra column
+  if(ncol(data)==4) {
+    data <- data[, .(count = sum(count, na.rm=T)), by = c("date", "location")]
+  }
+  
   setcolorder(data, c("location", "count", "date"))
   
   # Sort by date and location
