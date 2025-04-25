@@ -135,11 +135,19 @@ cl_range = paste0(
   ")"
 )
 cc_summary <- data.table(
-  var = c("Cluster Detection Date", "Test Interval (days)", "Baseline Interval (days)", "Max. Cluster Radius (miles)", "Spline", "Baseline Adjustment Method", "Cluster Total Case Restrictions"),
+  var = c(
+    "Cluster Detection Date",
+    "Test Interval (days)",
+    "Baseline Interval (days)",
+    "Max. Cluster Radius (miles)",
+    "Spline",
+    "Baseline Adjustment Method",
+    "Cluster Total Case Restrictions"
+  ),
   value = c(
-    as.character(data_config[["end_date"]]),
+    as.character(cluster_config[["end_date"]]),
     as.character(cluster_config[["test_length"]]),
-    as.character(data_config[["baseline_length"]]),
+    as.character(cluster_config[["baseline_length"]]),
     as.character(cluster_config[["radius"]]),
     as.character(cluster_config[["spline_value"]]),
     as.character(bal),
