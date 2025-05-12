@@ -104,9 +104,9 @@ dl_sidebar_ui <- function(id) {
       inputId = ns("data_load_drange"),
       label = labeltt(sb_ll[["data_load_drange"]]),
       end = Sys.Date()-7,
-      start = Sys.Date()-126,
-      min = Sys.Date()-MAX_DATE_RANGE,
-      max = Sys.Date()
+      start = Sys.Date()-126
+      # min = Sys.Date()-MAX_DATE_RANGE,
+      # max = Sys.Date()
     )
   )
 
@@ -432,7 +432,8 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
         )
 
       }) |> bindEvent(input$url_date_change)
-
+      
+      
       # url_comb is a reactive that holds the url
       url_params <- reactive({
 
@@ -500,9 +501,9 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
             session = session,
             inputId = "data_load_drange",
             start = source_data()[["date"]] |> min(),
-            end = source_data()[["date"]] |> max(),
-            min = source_data()[["date"]] |> min(),
-            max = source_data()[["date"]] |> max(),
+            end = source_data()[["date"]] |> max()
+            #min = source_data()[["date"]] |> min(),
+            #max = source_data()[["date"]] |> max(),
           )
         }
       }) |> bindEvent(source_data(), dc$res)

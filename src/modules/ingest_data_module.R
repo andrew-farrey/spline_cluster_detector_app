@@ -113,6 +113,16 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
               
             } else {
               if(dc$USE_NSSP) {
+                
+                # check that the dates are valid
+                start_date = dc$url_params$start_date
+                end_date = dc$url_params$end_date
+                if((end_date-start_date)>MAX_DATE_RANGE) {
+                  validate(
+                    paste0("The date range exceeds the current max of ", MAX_DATE_RANGE, " days.")
+                  )
+                }
+                
                 sd = do.call(generate_url, dc$url_params)
                 description = sd  
               }
