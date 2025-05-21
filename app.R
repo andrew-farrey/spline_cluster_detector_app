@@ -27,7 +27,10 @@ ui <- page(
     clustering_ui("clustering"),
     nav_panel(
       "Documentation",
-      uiOutput(outputId = "app_documentation")
+      tags$iframe(src="documentation.html",
+                  style  = "width: 100%; height: 800px; border: none;",
+                  seamless = "seamless"
+                  )
     ),
     nav_spacer(),
     nav_item(report_ui("report")),
@@ -97,7 +100,7 @@ server <- function(input, output, session) {
   
   output$app_documentation <- renderUI({
     HTML(
-      markdown::markdownToHTML(file="src/documentation/documentation.md", fragment.only = TRUE)
+      markdown::markdownToHTML(file="src/documentation/documentation.Rmd", fragment.only = TRUE)
     )
   })
 

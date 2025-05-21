@@ -35,7 +35,8 @@ sb_ll <- list(
     ),
     local_file_upload = list(
       l = "Upload File",
-      m = "Load a csv file; must include columns names 'location', 'date', 'count', in that order"
+      m = "Load a csv or cas file; csv files must include columns names 'location', 'date', 'count';
+      cas file must not include a header, have three columns, and the columns are assumed to be location, count, date (in that order)"
     ),
     ad_hoc_vs_built=list(
       l = "URL Option:",
@@ -196,8 +197,11 @@ dl_sidebar_ui <- function(id) {
     ),
     hidden(fileInput(
       inputId = ns("local_file_upload"),
-      label = labeltt(sb_ll[["local_file_upload"]])
+      label = labeltt(sb_ll[["local_file_upload"]]),
+      multiple=FALSE, 
+      accept =  c(".csv", ".cas")
     )),
+    hidden(uiOutput(ns("file_type_error_message"))),
     hidden(outcome_annotation)
   )
   
@@ -226,6 +230,7 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
     id,
     function(input, output, session) {
 
+      local_file_valid <- reactiveVal("valid")
       custom_url_valid <- reactiveVal("TRUE")
       
       output$url_validity_message <- renderText({
@@ -249,7 +254,6 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
       observe(dc$data_load_end <- input$data_load_drange[2])
       observe(dc$ad_hoc <- input$ad_hoc_vs_built == "ad_hoc")
       observe(dc$custom_url <- input$custom_url)
-      observe(dc$source_data <- source_data())
       observe(dc$url_params <- url_params())
       observe(dc$source_data <- source_data())
       observe(dc$synd_summary <- synd_summary())
@@ -280,7 +284,35 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
         }
         
       }) |> bindEvent(dc$USE_NSSP)
+      
+      observe({
+        
+        dc$source_data <- NULL
+        file_ext = tools::file_ext(input$local_file_upload$datapath)
+        
+        if(!file_ext %in% c("csv", "cas")) {
+          # Note that this is outside a render function, and will be silent
+          showElement(id = "file_type_error_message")
+          output$file_type_error_message <- renderUI(
+            tags$span("Error: file type must be csv/cas", style = "color:red;")
+          )
+        } else {
+          hideElement(id = "file_type_error_message")
+        }
 
+      }) |> bindEvent(input$local_file_upload$datapath)
+      
+      observe({
+        if(local_file_valid()!="valid") {
+          dc$source_data <- NULL
+          showElement(id = "file_type_error_message")
+          output$file_type_error_message <- renderUI(
+            tags$span(local_file_valid(), style = "color:red;")
+          )
+        } else {
+          hideElement(id = "file_type_error_message")
+        }
+      }) |> bindEvent(local_file_valid())
 
       # hide/show sidebar elements
       observe({
@@ -436,8 +468,6 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
       
       # url_comb is a reactive that holds the url
       url_params <- reactive({
-
-        #start_date <- dc$end_date - cc$test_length + 1 - dc$baseline_length
         
         if(dc$data_type=="details" & dc$data_source == "facility") {
           fields = "HospitalZip"
@@ -456,7 +486,7 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
           fields = fields
         )
       })
-
+      
       # source_data
       source_data <- reactive({
 
@@ -469,11 +499,20 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
         }
         # # otherwise, we read a local file (if the path has been provided)
         if(dc$USE_NSSP == FALSE & !is.null(input$local_file_upload$datapath)) {
-          d <- fread(input$local_file_upload$datapath)
-          setnames(d, new=tolower(names(d)))
-          d$location <- as.character(d$location)
-          d$date <- as.Date(d$date)
-          return(d)
+          
+          file_ext = tools::file_ext(input$local_file_upload$datapath)
+          req(file_ext %in% c("csv", "cas"))
+        
+          # Okay, we have a valid file type. We now need to dispatch a load
+          # and validate function
+          d <- load_and_validate_local_file(
+              input$local_file_upload$datapath,
+              ext=file_ext
+          )
+          
+          local_file_valid(d[["message"]])
+          req(d[["valid"]])
+          return(d[["data"]])
         }
       })
 
@@ -496,14 +535,11 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
             inputId = "state",
             choices = c(choices, "United States")
           )
-          req(source_data())
           updateDateRangeInput(
             session = session,
             inputId = "data_load_drange",
             start = source_data()[["date"]] |> min(),
             end = source_data()[["date"]] |> max()
-            #min = source_data()[["date"]] |> min(),
-            #max = source_data()[["date"]] |> max(),
           )
         }
       }) |> bindEvent(source_data(), dc$res)
@@ -549,6 +585,7 @@ hide_show_sidebar_elements <- function(use_nssp, url_builder, file_uploaded) {
     
     hideElement("outcome_annotation")
     hideElement("local_file_upload")
+    hideElement("file_type_error_message")
     showElement("main_accordion")
     showElement("options_accordion")
     
@@ -626,3 +663,80 @@ check_url_validity <- function(url, states, dates) {
   # return the message
   validity_result
 }
+
+load_and_validate_local_file <- function(path, ext) {
+  if(ext == "cas") load_and_validate_local_cas(path)
+  else if(ext == "csv") load_and_validate_local_csv(path)
+  else list(data=NULL, valid=FALSE)
+}
+
+load_and_validate_local_cas <- function(path) {
+  
+  
+  on_error <- function(m="Invalid format, reason unspecified") {
+    list(data=NULL, valid=FALSE, message=m)
+  }
+  
+  # this is a cas, we require that there is no header
+  d <- data.table::fread(path,header = FALSE, colClasses = "character")
+  # make name lower case
+  setnames(d, new=tolower(names(d)))
+  
+  # check only three columns for now
+  if(dim(d)[2]!=3) return(on_error(m = "cas file can only contain 3 columns"))
+  
+  if(!all(names(d) %in% c("v1", "v2", "v3"))) return(on_error(m = "CAS file has invalid column names"))
+  
+  # set location to character
+  d$v1 <- as.character(d$v1)
+  
+  # set count to numeric
+  if(inherits(try(d$v2 <- as.integer(d$v2),silent=TRUE), "try-error")) {
+    return(on_error(m="count column not correctly parsed as integer"))
+  }
+  
+
+  # set date to date
+    if(inherits(try(d$v3 <- as.IDate(d$v3),silent=TRUE), "try-error")) {
+    return(on_error(m="Date column not correctly parsed"))
+  } 
+  
+  setnames(d, new=c("location", "count", "date"))
+  
+  # valid, return.
+  return(list(data = d, valid=TRUE, m="valid"))  
+}
+
+
+load_and_validate_local_csv <- function(path) {
+  
+  on_error <- function(m="Invalid format, reason unspecified") {
+    list(data=NULL, valid=FALSE, message=m)
+  }
+  
+  d <- data.table::fread(path,header=TRUE,colClasses = "character")
+  # make name lower case
+  setnames(d, new=tolower(names(d)))
+
+  if(!"location" %in% names(d)) return(on_error(m = "csv missing named location column"))
+  if(!"date" %in% names(d)) return(on_error(m = "csv missing named date column"))
+  if(!"count" %in% names(d)) return(on_error(m="csv missing named count column"))
+  
+  # set location to character
+  d$location <- as.character(d$location)
+  
+  # set location to date
+  if(inherits(try(d$date <- as.Date(d$date),silent=TRUE), "try-error")) {
+    return(on_error(m="Date column not correctly parsed"))
+  }
+  
+  # set count to numeric
+  if(inherits(try(d$count <- as.integer(d$count),silent=TRUE), "try-error")) {
+    return(on_error(m="count column not correctly parsed as integer"))
+  }
+  
+  
+  # valid, return.
+  return(list(data = d, valid=TRUE, message = "valid"))  
+}
+

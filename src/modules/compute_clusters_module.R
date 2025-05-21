@@ -94,6 +94,10 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
       }) |> bindEvent(trigger())
 
       cluster_table_display <- reactive({
+        
+        req(cluster_data())
+        req(dc$res)
+        
         if(!is.data.frame(cluster_data()[[1]])) HTML(cluster_data())
         else {
           
