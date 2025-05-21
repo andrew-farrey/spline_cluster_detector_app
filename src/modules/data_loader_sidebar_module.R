@@ -287,7 +287,7 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
       
       observe({
         
-        dc$source_data <- NULL
+        #dc$source_data <- NULL
         file_ext = tools::file_ext(input$local_file_upload$datapath)
         
         if(!file_ext %in% c("csv", "cas")) {
