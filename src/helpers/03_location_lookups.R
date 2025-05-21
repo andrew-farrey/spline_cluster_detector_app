@@ -156,6 +156,7 @@ extract_locations_from_url <- function(url, res=c("zip", "county")) {
 # to find the counties touched by zips, or the zips
 # touched by counties
 find_intersects<- function(clt, zfi, res=c("zip", "county")) {
+  res = match.arg(res)
   if(res=="zip") {
     result <- unique(zfi[clt, on=.(zipcode == location)][, .(fips, target)])
     result[, fips:=gen_display_name_from_fips(fips)]

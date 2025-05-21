@@ -97,7 +97,7 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
         tryCatch(
           {
             if(is.null(dc$source_data)) {
-              stop("No URL, API Call, or FileLoaded")
+              stop("No URL, No API Call, or No File / Invalid File Type / Invalid File Format")
             }
             
             if(is.null(dc$res) || identical(dc$res, character(0))) {

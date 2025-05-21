@@ -17,13 +17,13 @@ The ribbon at the top of the app has menu selections 'Data Loader', 'Clustering'
 
 ### Data Specification and Ingestion
 
-There are two basic options for ingesting input data. First option: build or paste a URL address followed by an API call to pull ESSENCE data with this URL. The second option does not require ESSENCE access and allows the user to provide the data directly via upoading a csv file.
+There are two basic options for ingesting input data. First option: build or paste a URL address followed by an API call to pull ESSENCE data with this URL. The second option does not require ESSENCE access and allows the user to provide the data directly via uploading a csv or cas file.
 
 IN THE APP:
 
 User selects either the 'Local File' button or the 'NSSP API Call' button. For the local file selection, the user navigates to and selects an input file stored on the local machine. For the API call selection, user forms the URL using control panel options. Acquiring the URL for the API call (not needed for direct .csv data read)
 
-The user may either paste in a custom URL from an ESSENCE query, or build the URL with one of the standard record classification methods: syndrome, subsyndrome, or CCDD category.
+The user may either paste in a custom URL from an ESSENCE query, or build the URL with one of the standard record classification methods: syndrome, sub-syndrome, or CCDD category.
 
 IN THE APP:
 

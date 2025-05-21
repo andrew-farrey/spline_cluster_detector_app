@@ -56,6 +56,7 @@ data_loader_server <- function(id, results, data_config, cluster_config, profile
       # Clear critical objects if data_config$USE_NSSP changes
       # ---------------------------------------------
       observe({
+        data_config$source_data <- NULL
         results$records <- NULL
         results$records_description <- NULL
         results$map <- NULL

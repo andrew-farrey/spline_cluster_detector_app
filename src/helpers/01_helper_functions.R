@@ -195,8 +195,6 @@ deduplicate_datadetails <- function(
   setDT(data) |>
     # 1. filter out certain types
     _[!grepl(excl_fac_types, FacilityType,ignore.case = T)] |>
-    # # 2. replace location as the hosp region if out 
-    # _[, location:=fifelse(substr(HospitalRegion,1,3)!=substr(Region,1,3), HospitalRegion, Region)] |>
     # 3. deduplicate
     _[order(Date), .SD[1], .(Visit_ID, Hospital)]
   
