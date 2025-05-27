@@ -44,7 +44,14 @@ library(Rnssp)
 library(plotly)
 library(kableExtra)
 ```
+Note: a common error regarding `tabset` construction will be raised if `bslib` package version is not updated to at least 0.9.0 (or higher)
 
+### Launch the app:
+The easiest way to launch the app is to run:
+```
+shiny::runGitHub("lmullany/spline_cluster_detector_app").
+```
+Note that the above required package must be first installed (and updated to latest versions) in order to run this app
 ### Contacts:
 
 -   Howard Burkom [Howard.Burkom\@jhuapl.edu](mailto:Howard.Burkom@jhuapl.edu)
