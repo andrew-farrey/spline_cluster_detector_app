@@ -51,7 +51,7 @@ The easiest way to launch the app is to run:
 ```
 shiny::runGitHub("lmullany/spline_cluster_detector_app").
 ```
-Note that the above required package must be first installed (and updated to latest versions) in order to run this app
+Note that the above required packages must be first installed (and updated to latest versions) in order to run this app
 ### Contacts:
 
 -   Howard Burkom [Howard.Burkom\@jhuapl.edu](mailto:Howard.Burkom@jhuapl.edu)
