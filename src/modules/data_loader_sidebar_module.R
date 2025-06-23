@@ -679,6 +679,7 @@ load_and_validate_local_cas <- function(path) {
   
   # this is a cas, we require that there is no header
   d <- data.table::fread(path,header = FALSE, colClasses = "character")
+  
   # make name lower case
   setnames(d, new=tolower(names(d)))
   
@@ -726,7 +727,7 @@ load_and_validate_local_csv <- function(path) {
   d$location <- as.character(d$location)
   
   # set location to date
-  if(inherits(try(d$date <- as.Date(d$date),silent=TRUE), "try-error")) {
+  if(inherits(try(d$date <- as.IDate(d$date),silent=TRUE), "try-error")) {
     return(on_error(m="Date column not correctly parsed"))
   }
   
