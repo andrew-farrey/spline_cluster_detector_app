@@ -72,8 +72,8 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
             find_clusters(
               cases = results$filtered_records,
               distance_matrix = cc$distance_matrix,
-              spline_lookup = cc$spline_lookup,
               detect_date = cc$end_date,
+              spline_lookup = cc$spline_lookup,
               baseline_length = as.numeric(cc$baseline_length),
               max_test_window_days = as.numeric(cc$test_length),
               guard_band =0,
