@@ -42,7 +42,12 @@ compute_clusters_ui <- function(id) {
       withSpinner(
         uiOutput(outputId = ns("clusterdata")),
         caption="Computing clusters ... can take some time"
-      )
+      ),
+      card_footer(
+        downloadButton(ns("cluster_display_download_btn"),
+        "Download Clusters",
+        class = "btn-primary btn-sm"
+      ))
     )),
     hidden(htmlOutput(outputId = ns("cluster_psa")))
   )
@@ -54,7 +59,26 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
     function(input, output, session) {
       
       observe(results$cluster_data <- cluster_data())
-      observe(results$cluster_table_display <- cluster_table_display())
+      observe(results$cluster_table_display <- cluster_table_display()$display)
+      observe(results$cluster_data_extended <- cluster_table_display()$cd)
+      # observe({
+      #   req(cluster_table_display())
+      #   if(is.list(cluster_table_display())) {
+      #     results$cluster_table_display <- cluster_table_display()$display  
+      #   } else {
+      #     results$cluster_table_display <- cluster_table_display()
+      #   }
+      # })
+      # 
+      # observe({
+      #   req(cluster_table_display())
+      #   if(is.list(cluster_table_display())) {
+      #     results$cluster_data_extended <- cluster_table_display()$cd
+      #   }
+      #   
+      # })
+      
+      ns = session$ns
       
       # ---------------------------------------------
       #   Compute Clusters
@@ -64,13 +88,13 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
       
       observe({
         if(trigger()) {
-          req(results$filtered_records)
+          req(results$filtered_records_count)
           toggle_task_button_color(parent_session$ns("clusters_btn"), busy=TRUE)
           cluster_data(NULL)
           
           clusters <- tryCatch(
             find_clusters(
-              cases = results$filtered_records,
+              cases = results$filtered_records_count,
               distance_matrix = cc$distance_matrix,
               detect_date = cc$end_date,
               spline_lookup = cc$spline_lookup,
@@ -98,7 +122,11 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
         req(cluster_data())
         req(dc$res)
         
-        if(!is.data.frame(cluster_data()[[1]])) HTML(cluster_data())
+        if(!is.data.frame(cluster_data()[[1]])) {
+          return(list(
+          display = HTML(cluster_data()), cd = NULL
+          ))
+        }
         else {
           
           cd <- cluster_data()[[1]][
@@ -158,7 +186,7 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
             "</details>"
             )]
           
-          datatable(
+          display <- datatable(
             cd,
             container=get_cluster_table_sketch(dc$res),
             rownames=FALSE,
@@ -174,6 +202,8 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
               
             )
           )
+          
+          return(list("display" = display, "cd" = cd))
         }
         
       })
@@ -193,6 +223,16 @@ compute_clusters_server <- function(id, results, dc, cc, trigger, parent_session
 
       output$cluster_psa <- renderText(
         cluster_computation_psa()
+      )
+      
+      output$cluster_display_download_btn <- downloadHandler(
+        filename = "clusters_found.csv",
+        content = function(file) {
+          data.table::fwrite(
+            results$cluster_data_extended,
+            file
+          )
+        }
       )
 
     }

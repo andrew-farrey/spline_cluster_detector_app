@@ -95,8 +95,8 @@ data_explorer_server <- function(id, results, dc, cc) {
       
       summary_stats <- reactive({
         
-        req(results$filtered_records)
-        d = results$filtered_records[count>0]
+        req(results$filtered_records_count)
+        d = results$filtered_records_count[count>0]
 
         if(d[location %in% cc$distance_locations, .N] == 0) {
           validate("No Cases at these locations; check filters and/or state selection")
@@ -122,17 +122,17 @@ data_explorer_server <- function(id, results, dc, cc) {
 
       observe({
         
-        req(results$filtered_records)
+        req(results$filtered_records_count)
         toggleElement(
           id = "zero_handle",
-          condition = results$filtered_records[count==0, .N] > 0
+          condition = results$filtered_records_count[count==0, .N] > 0
         )
-      }) |> bindEvent(results$filtered_records)
+      }) |> bindEvent(results$filtered_records_count)
       
       hm_data <- reactive({
-        req(results$filtered_records)
+        req(results$filtered_records_count)
         
-        d = results$filtered_records
+        d = results$filtered_records_count
         
         if(d[location %in% cc$distance_locations, .N] == 0) {
           validate("No Cases at these Locations; check State Selection")
@@ -141,7 +141,7 @@ data_explorer_server <- function(id, results, dc, cc) {
         
         #splineClusterDetector::generate_heatmap_data(
         generate_heatmap_data(
-          data = results$filtered_records,
+          data = results$filtered_records_count,
           end_date = cc$end_date,
           locations = isolate(cc$distance_locations),
           baseline_length = cc$baseline_length,
@@ -184,9 +184,9 @@ data_explorer_server <- function(id, results, dc, cc) {
       
       tsdata <- reactive({
         
-        req(results$filtered_records)
+        req(results$filtered_records_count)
         
-        d = results$filtered_records
+        d = results$filtered_records_count
         
         if(d[location %in% cc$distance_locations, .N] == 0) {
           validate("No Cases at these Locations; check State Selection")
@@ -194,7 +194,7 @@ data_explorer_server <- function(id, results, dc, cc) {
         
         #data <- splineClusterDetector::generate_time_series_data(
         data <- generate_time_series_data(
-          data = results$filtered_records,
+          data = results$filtered_records_count,
           end_date = cc$end_date,
           locations = isolate(cc$distance_locations),
           baseline_length = cc$baseline_length,

@@ -3,6 +3,15 @@
 # contract no. 75D30124C19958
 
 
+
+# for debugging
+# options(
+#   warn               = 2,
+#   shiny.sanitize.errors = FALSE,
+#   shiny.error       = browser
+# )
+
+
 # source files --------------------------------------------------------------
 source("src/00_setup.R")
 
@@ -63,7 +72,8 @@ server <- function(input, output, session) {
     
     # url and source info
     url_params = NULL, source_data = NULL, USE_NSSP = FALSE, data_type = NULL,
-    data_source = NULL, custom_url = NULL, custom_url_valid = TRUE, ad_hoc = FALSE, dedup = FALSE
+    data_source = NULL, custom_url = NULL, custom_url_valid = TRUE,
+    ad_hoc = FALSE, dedup = FALSE
   )
   
   # ----------------------------------------------------------------------
@@ -82,27 +92,19 @@ server <- function(input, output, session) {
   # Global Reactives for Main Results
   # ----------------------------------------------------------------------
   results <- reactiveValues(
-    cluster_data=NULL, cluster_table_display=NULL, map=NULL, heatmap=NULL, 
+    cluster_data=NULL, cluster_table_display=NULL, cluster_data_extended=NULL,
+    map=NULL, heatmap=NULL, 
     time_series_plot=NULL, summary_stats=NULL, records=NULL, records_description=NULL,
-    data_details=NULL, filtered_records=NULL
+    data_details=NULL, filtered_records=NULL, filtered_records_count=NULL
   )
   
   # ---------------------------------------------------------
   #   Module Calls: Data Loader, Clustering, and Report
   # ---------------------------------------------------------
   data_loader_server("data_loader", results, data_config, cluster_config, profile, valid_profile)
-  clustering_server("clustering", results, data_config, cluster_config)
+  clustering_server("clustering", results, data_config, cluster_config, profile)
   report_server("report", results, data_config, cluster_config)
   
-  # ---------------------------------------------------------
-  #   Documentation Output
-  # ---------------------------------------------------------
-  
-  output$app_documentation <- renderUI({
-    HTML(
-      markdown::markdownToHTML(file="src/documentation/documentation.Rmd", fragment.only = TRUE)
-    )
-  })
 
 }
 

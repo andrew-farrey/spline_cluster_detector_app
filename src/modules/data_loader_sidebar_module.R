@@ -24,19 +24,19 @@ sb_ll <- list(
     ),
     data_source = list(
       l = HTML("<h6>Data Source</>"),
-      m = "Choose between Patient Level or Facility Level; The latter will assign encounters
+      m = "Choose between Patient Level or Facility Level; The former will assign encounters
       to the patient (home) location, while the latter assigns the encounter to the 
-      location where the encounter occured (Not available for zip code, or Data Details
-      queries.)"
+      location where the encounter occured (At this time, Facility is not available for Table Builder queries
+      at the Zip Code Level)."
     ),
     local_or_nssp = list(
       l = HTML("<h6>Data Source</>"),
-      m = "Load a local csv file with counts by location and date, or construct an NSSP call using the API"
+      m = "Load a local file with counts by location and date, or construct an NSSP call using the API"
     ),
     local_file_upload = list(
       l = "Upload File",
-      m = "Load a csv or cas file; csv files must include columns names 'location', 'date', 'count';
-      cas file must not include a header, have three columns, and the columns are assumed to be location, count, date (in that order)"
+      m = "Load a csv or cas file; csv files must include column names 'location', 'date', 'count';
+      cas file must NOT include a header, have three columns, and the columns are assumed to be location, count, date (in that order)"
     ),
     ad_hoc_vs_built=list(
       l = "URL Option:",
@@ -257,6 +257,8 @@ dl_sidebar_server <- function(id, dc, cc, profile, valid_profile) {
       observe(dc$url_params <- url_params())
       observe(dc$source_data <- source_data())
       observe(dc$synd_summary <- synd_summary())
+      observe(dc$synd_drop_menu <- synd()$synd_drop_menu)
+      observe(dc$synd <- synd()$synd_cat)
 
       # if ALLOW SHINY CREDENTIALS is FALSE, but the
       # profile is still not valid, then hide the api choice

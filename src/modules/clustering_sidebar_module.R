@@ -35,6 +35,11 @@ clsb_ll <- list(
       Choices include: add a constant (1) to the expected only when otherwise a divide-by-zero would occur; include
       the test interval data in the baseline counts, and no adjustment.
       "
+    ),
+    spline = list(
+     l = "Select Spline-based Classifier",
+     m = "Spline lookup table; values can be intepreted as approximate p-values / level of
+     significance required to classify a candidate cluster as significant."
     )
 )
 
@@ -81,7 +86,7 @@ clust_sidebar_ui <- function(id) {
   # ) 
   spline_selector <- selectInput(
     inputId = ns("spline"),
-    label = "Select Spline-based Classifier",
+    label = labeltt(clsb_ll[["spline"]]),
     choices = names(SPLINE_LIBRARY), 
     selected = "Spline-0.01"
   )
@@ -187,6 +192,8 @@ clust_sidebar_server <- function(id, results, dc, cc) {
       
       # Update the filtered data
       observe(results$filtered_records <- filtered_data()$fdf)
+      observe(results$filtered_records_count <- filtered_data()$fdf_count)
+      
       
       # if this is data details, then we need to show the filter choices
       
@@ -219,7 +226,8 @@ clust_sidebar_server <- function(id, results, dc, cc) {
         
         if(dc$data_type == "table") {
           return(list(
-            fdf = results$records,
+            fdf = NULL,
+            fdf_count = results$records,
             text_filters = NULL
           ))
         }
@@ -232,20 +240,21 @@ clust_sidebar_server <- function(id, results, dc, cc) {
           paste0("between(Age,", input$filter_age[1], ",", input$filter_age[2], ")"),
           paste0("Sex %chin% c('", paste(input$filter_sex, collapse="','"), "')")
         )
+        # first reduce using these filters
+        fdf <- reduce_data_details_by_filters(fdf, filters)
 
-        fdf = reduce_data_details_to_counts(
+        fdf_count = reduce_data_details_to_counts(
           data = fdf,
           res = dc$res,
           state = dc$state2,
-          data_source = dc$data_source,
-          filters = filters
+          data_source = dc$data_source
         )
-        fdf <- check_and_standarize_data_cols(fdf)
-        fdf <- post_process_data_pull(fdf, res=dc$res)
+        fdf_count <- check_and_standarize_data_cols(fdf_count)
+        fdf_count <- post_process_data_pull(fdf_count, res=dc$res)
         
         text_filters <- get_text_filters(input$filter_age, input$filter_sex)
         
-        return(list(fdf = fdf, text_filters =text_filters))
+        return(list(fdf = fdf, fdf_count = fdf_count, text_filters =text_filters))
       
       }) |> bindEvent(input$filter_age, input$filter_sex)
       

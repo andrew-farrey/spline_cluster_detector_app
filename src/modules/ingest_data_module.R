@@ -39,13 +39,14 @@ ingested_data_ui <- function(id) {
       ),
       class = 'bg-transparent border-0'
     ), 
-    # card(
-    #   id = ns("data_details_card"),
-    #   min_height=300,
-    #   withSpinner(
-    #     dataTableOutput(ns("data_details"))
-    #   )
-    # )
+    hidden(card(
+      id = ns("data_details_card"),
+      min_height=300,
+      withSpinner(
+        dataTableOutput(ns("data_details"))
+      )
+    )
+    )
   ))
 }
 
@@ -56,7 +57,7 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
       
       observe({
         results$records <- dt_events()$data
-        results$filtered_records <- dt_events()$data
+        results$filtered_records_count <- dt_events()$data
         results$data_details <- dt_events()$data_details
         results$records_description <- dt_events()$description
       })
@@ -83,6 +84,7 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
         results$records <- NULL
         results$records_description <- NULL
         results$filtered_records <- NULL
+        results$filtered_records_count <- NULL
         results$data_details <- NULL
         results$map <- NULL
         results$cluster_data <- NULL
@@ -155,7 +157,10 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
               )
             }
           },
-          error=function(e) validate(e$message),
+          error=function(e) {
+            print(e)
+            validate(e$message)
+          },
           finally = {
             update_task_button(session = parent_session, "ingest_btn",state="ready")
             toggle_task_button_color(parent_session$ns("ingest_btn"), busy=FALSE)

@@ -20,6 +20,7 @@ clustering_ui <- function(id) {
         data_explorer_ui(id=ns("explorer")),
         compute_clusters_ui(id=ns("cluster")),
         cluster_map_ui(id=ns("map")),
+        cluster_line_listing_ui(id=ns("cluster_ll")),
         selected = "Data Explorer",
         id = ns("cluster_navset")
       )
@@ -28,7 +29,7 @@ clustering_ui <- function(id) {
 }
 
 
-clustering_server <- function(id,results, dc, cc) {
+clustering_server <- function(id,results, dc, cc, profile) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -47,6 +48,7 @@ clustering_server <- function(id,results, dc, cc) {
       data_explorer_server(id = "explorer", results, dc, cc)
       compute_clusters_server(id="cluster", results, dc, cc, compute_trigger, session)
       cluster_map_server(id="map", results, dc, cc)
+      cluster_line_listing_server(id="cluster_ll", results, dc, cc, profile, cluster_btn_click)
       
     }
   )

@@ -3,6 +3,26 @@
 # contract no. 75D30124C19958
 
 
+## Function to return a copy of a dataframe with specific columns
+## replaced with masked values
+obscure_pii <- function(d, cols=NULL) {
+  
+  if(is.null(cols)) cols = names(d)
+  
+  df <- data.table::copy(d)
+  for (col in cols) {
+    set(df, j = col, value = replicate(
+      nrow(df),
+      paste0(sample(
+        c(LETTERS, letters, 0:9), 10,
+        replace = TRUE
+      ), collapse = "")
+    ))
+  }
+  df[]
+}
+
+
 # Function to get an interpolation function for any value of observe
 # Requires a list of datatables, each one a specific spline lookup
 get_interpolation_functions <- function(spline_library) {
@@ -98,9 +118,10 @@ get_custom_url_data <- function(url, profile) {
   
   data <- prepare_raw_data(data, "table", res_guess)
   
-  data <- post_process_data_pull(data, res=res_guess)
+  # Note that prepare raw data now returns a list of
+  # length two with names "data", and "data_details"
   
-  
+  data[["data"]] <- post_process_data_pull(data[["data"]], res=res_guess)
   
   return(data)
   
@@ -151,7 +172,7 @@ get_data <- function(
 post_process_data_pull <- function(data, res=c("zip", "county")) {
   
   # could be empty
-  if(nrow(data) == 0) return(data)
+  if(is.null(data) || nrow(data)== 0) return(data)
   
   # make sure data location column is character
   data[, location:=as.character(location)]
@@ -217,7 +238,7 @@ prepare_raw_data <- function(data, data_type, res, deduplicate=FALSE, state=NULL
     setDT(data)
     
     # could be empty
-    if(nrow(data) == 0) return(data)
+    if(is.null(data) || nrow(data) == 0) return(data)
     
     # if deduplication, call the deduplication function
     if(deduplicate) data <- deduplicate_datadetails(data = data)
@@ -226,7 +247,7 @@ prepare_raw_data <- function(data, data_type, res, deduplicate=FALSE, state=NULL
     
     # Reduce data details to counts
     data <- reduce_data_details_to_counts(
-      data=data, res=res, state=state, data_source = data_source, filters=NULL
+      data=data, res=res, state=state, data_source = data_source
     )  
   
   } else {
@@ -243,12 +264,24 @@ prepare_raw_data <- function(data, data_type, res, deduplicate=FALSE, state=NULL
   ))
 }
 
+reduce_data_details_by_filters <- function(
+    data,
+    filters
+) {
+  for (f in filters) {
+    # 1. parse the string into an R expression
+    expr <- parse(text = f)[[1]]
+    # 2. use eval(), within df
+    data <- data[eval(expr, envir=data)]
+  }
+  return(data)
+}
+
 reduce_data_details_to_counts <- function(
     data,
     res=c("zip", "county"),
     state,
-    data_source=c("patient", "facility"),
-    filters=NULL
+    data_source=c("patient", "facility")
 ) {
   
   # Now we have four possibilities:
@@ -264,15 +297,6 @@ reduce_data_details_to_counts <- function(
   
   res = match.arg(res)
   data_source=match.arg(data_source)
-  
-  if(!is.null(filters)) {
-    for (f in filters) {
-      # 1. parse the string into an R expression
-      expr <- parse(text = f)[[1]]
-      # 2. use eval(), within df
-      data <- data[eval(expr, envir=data)]
-    }
-  }
   
   byvar = fifelse(res=="zip", "ZipCode", "Region")
   
