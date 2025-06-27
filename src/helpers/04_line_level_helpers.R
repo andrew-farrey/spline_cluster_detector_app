@@ -164,12 +164,8 @@ get_line_listing_from_clusters <- function(
     updated_url <- base_url
   }
   
-  print(updated_url)
-  
   #5. Pull the data down
   ll <- get_api_data(url = updated_url, profile=profile)$dataDetails
-  
-  print(paste0("dimension of data details pull for line listing of clusters: ", toString(dim(ll))))
   
   # set to DT, fix dates, and dedup if
   setDT(ll)
@@ -192,8 +188,6 @@ get_line_listing_from_clusters <- function(
   # running an inner join on the ll thus far with the reference details rows
   ll_cols = names(ll)
   if(!is.null(reference_details)) {
-    print("merging on reference details")
-    print(paste0("dim of reference details is: ", dim(reference_details)))
     ll <- reference_details[, .(C_BioSense_ID)][ll, on="C_BioSense_ID", nomatch=NULL]
   }
   

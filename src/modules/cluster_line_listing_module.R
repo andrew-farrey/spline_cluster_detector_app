@@ -77,6 +77,11 @@ cluster_line_listing_server <- function(id, results, dc, cc, profile, recompute)
       }) |> bindEvent(recompute())
       
       observe({
+        if(!conditions_met()) ll_data(NULL)
+      }) |> bindEvent(conditions_met())
+      
+      
+      observe({
         if(clusters_found()) {
           ll <- tryCatch(
             get_line_listing_from_clusters(
@@ -155,6 +160,7 @@ cluster_line_listing_server <- function(id, results, dc, cc, profile, recompute)
       # hide the ll center selector if no ll_data()
       observe(toggleElement("ll_cluster_selector", condition=!is.null(nrow(ll_data()))))
       observe(toggleElement("unmask", condition=!is.null(nrow(ll_data()))))
+      
       # hide the generate LL button if no clusters
       observe(toggleElement("generate_ll_task", condition=conditions_met()))
       
