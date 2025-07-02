@@ -79,3 +79,7 @@ ZFI = fread("ancillary_data/zcta_fips_intersections.csv", colClasses = "characte
 
 ALLOW_CUSTOM_URL = TRUE
 
+## This is a way to globaly set http version to 1.1
+## but it is a bit like take a sledgehammer.
+#httr::set_config(config=httr::config(http_version = 2L))
+

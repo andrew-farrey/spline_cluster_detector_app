@@ -143,7 +143,12 @@ get_data <- function(
   res = match.arg(res)
   
   if(USE_NSSP == TRUE) {
+    if(nchar(source_data)>=6000) {
+      httr::set_config(config=httr::config(http_version = 2L))
+    }
     raw_data <- get_api_data(source_data, profile=profile)
+    httr::reset_config()
+    
     raw_data <- prepare_raw_data(
       raw_data,
       data_type,
