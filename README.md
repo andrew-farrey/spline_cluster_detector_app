@@ -44,7 +44,9 @@ library(Rnssp)
 library(plotly)
 library(kableExtra)
 ```
-Note: a common error regarding `tabset` construction will be raised if `bslib` package version is not updated to at least 0.9.0 (or higher)
+### Problems and Solutions noted by Users:
+1. a common error regarding `tabset` construction will be raised if `bslib` package version is not updated to at least 0.9.0 (or higher)
+2. not all the above packages are availalble at "https://rs-packages.biosense.wan/prod-cran/latest", so if you are installing the above pre-reqs on Biosense Posit, you may need to explicitly indicate the repo in the `install.packages()` function.  For example: try `install.packages("bsicons", repos = "https://cloud.r-project.org")` instead of `install.packages("bsicons")`
 
 ### Launch the app:
 The easiest way to launch the app is to run:
