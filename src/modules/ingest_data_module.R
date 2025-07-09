@@ -29,8 +29,10 @@ ingested_data_ui <- function(id) {
   hidden(div(
     id = ns("ingest_data_card"),
     card(
+      card_header("Counts by Location and Date",class = "bg-primary"),
       id = ns("ingest_data_card"),
-      min_height = 300,
+      max_height = 800,
+      full_screen = TRUE,
       withSpinner(dataTableOutput(ns("inputdata")), 
                   caption = "Loading Data (API calls can take some time)"),
       card_footer(
@@ -206,7 +208,8 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
         datatable(
           dt_events()$data[count>0, list(display_name, date, count)],
           colnames = c("Location", "Date", "Count"),
-          rownames = FALSE
+          rownames = FALSE,
+          options = list(pageLength=20)
         ) 
       },server=TRUE) 
       
