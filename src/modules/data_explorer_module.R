@@ -41,7 +41,7 @@ data_explorer_ui <- function(id) {
       input_switch(id = ns("zero_handle"), labeltt(ds_ll[["zero_handle"]]), value = FALSE)
     )
   )
-
+  
   nav_panel(
     title = "Data Explorer",
     navset_card_pill(
@@ -62,7 +62,9 @@ data_explorer_ui <- function(id) {
         card(
           full_screen = TRUE,
           min_height = "500px",
-          withSpinner(plotlyOutput(ns("heatmap")), caption = "Heatmap Loading"),
+          withSpinner(plotlyOutput(ns("heatmap"))
+                      # , caption="Heatmap Loading"
+          ),
           option_controls,
           class = "bg-transparent border-0"
         )
@@ -72,8 +74,10 @@ data_explorer_ui <- function(id) {
         card(
           full_screen = TRUE,
           min_height = "500px",
-          withSpinner(plotlyOutput(ns("tSeries")), caption = "Time Series Loading"),
-          class = "bg-transparent border-0"
+          withSpinner(plotlyOutput(ns("tSeries"))
+                      # , caption="Time Series Loading"
+          ),
+          class = 'bg-transparent border-0'
         )
       )
     )
@@ -118,7 +122,6 @@ data_explorer_server <- function(id, results, dc, cc) {
 
       # Show the Summary Table
       output$summarytable <- renderDataTable(summary_stats())
-
 
       observe({
 

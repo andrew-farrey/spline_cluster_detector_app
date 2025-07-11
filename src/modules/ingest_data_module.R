@@ -33,8 +33,9 @@ ingested_data_ui <- function(id) {
       id = ns("ingest_data_card"),
       max_height = 800,
       full_screen = TRUE,
-      withSpinner(dataTableOutput(ns("inputdata")),
-        caption = "Loading Data (API calls can take some time)"),
+      withSpinner(dataTableOutput(ns("inputdata"))
+                  # ,caption = "Loading Data (API calls can take some time)"
+      ),
       card_footer(
         downloadButton(ns("download_ingested_data"), "Download Data", class = "btn-primary btn-sm"),
         actionButton(ns("url"), "Show URL/Source Path", class = "btn-primary btn-sm")
@@ -162,9 +163,7 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
         finally = {
           update_task_button(session = parent_session, "ingest_btn", state = "ready")
           toggle_task_button_color(parent_session$ns("ingest_btn"), busy = FALSE)
-        }
-
-        )
+        })
 
 
         return(list(
@@ -182,9 +181,8 @@ ingested_data_server <- function(id, profile,  results, dc, cc, ibc, parent_sess
 
         if (dc$USE_NSSP) message <- dt_events()$description
         else message <- "LOCAL FILE SELECTED/LOADED"
-
-        showModal(
-          modalDialog(
+        showModal( 
+          modalDialog( 
             title = "Data Source (Esc to Close)",
             easyClose = TRUE,
             size = "l",

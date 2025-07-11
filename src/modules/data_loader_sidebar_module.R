@@ -52,28 +52,24 @@ sb_ll <- list(
     l = "Data Date Range",
     m = "Choose a date range for api call. Default is 120 days. We recommend a date
       range sufficient to allow a 7 date test interval preceded by 90 days of baseline"
-  ),
-  # remove these four later..
-  # us_matrix = list(
-  #   l = "Pre-Load the US Distance Matrix",
-  #   m = "Enabling this option will preload the US Distance Matrix, which takes a couple of seconds,
-  #   but speeds up calculation of subsequent distance matrices. We suggest enabling if you are
-  #   going to examine multiple states in a single session, or do a national level query."
-  # ),
-  end_date = list(
-    l = "End Date",
-    m = "Final/Last date of the test period"
-  ),
-  test_length = list(
-    l = "Max Cluster Days",
-    m = "Length in days of the test interval; equivalently, the maximum number of days for the cluster"
-  ),
-  baseline_length = list(
-    l = "Baseline Length",
-    m = paste0("Number of days in the baseline interval (min 1, max ", MAX_DATE_RANGE, ")")
-  )
-
-
+    ),
+    end_date = list(
+      l = "End Date",
+      m = "Final/Last date of the test period"
+    ),
+    test_length = list(
+      l = "Max Cluster Days",
+      m = "Length in days of the test interval; equivalently, the maximum number of days for the cluster"
+    ),
+    baseline_length = list(
+      l = "Baseline Length",
+      m = paste0("Number of days in the baseline interval (min 1, max ", MAX_DATE_RANGE, ")")
+    ),
+    dedup = list(
+      l = "De-duplicate?",
+      m = "De-duplicates encounters by taking the first (chronological) encounter within VisitID and Hospital.
+      The default behavior is to NOT de-duplicate."
+    )
 )
 
 
@@ -121,8 +117,8 @@ dl_sidebar_ui <- function(id) {
     ),
     conditionalPanel(
       condition = "input.data_type == 'details'",
-      input_switch(id = ns("dedup"), label = "De-duplicate?", value = TRUE),
-      ns = ns
+      input_switch(id = ns("dedup"), label = labeltt(sb_ll[["dedup"]]), value=FALSE),
+      ns=ns
     )
   )
 
